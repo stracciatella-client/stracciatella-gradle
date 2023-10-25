@@ -1,0 +1,7 @@
+[versions]
+loom = "1.4.1"
+gson = "2.10.1"
+
+[libraries]
+loom = { group = "net.fabricmc", name = "fabric-loom", version.ref = "loom" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
