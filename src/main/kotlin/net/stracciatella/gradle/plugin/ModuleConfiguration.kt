@@ -12,6 +12,8 @@ import org.gradle.api.internal.artifacts.repositories.resolver.MavenUniqueSnapsh
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.SourceSet
+import org.gradle.language.base.artifact.SourcesArtifact
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -19,11 +21,15 @@ import java.net.URI
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
-class ModuleConfiguration(@Transient private val project: Project) {
+open class ModuleConfiguration(@Transient private val project: Project) {
+    companion object {
+        private val loomProcessorIndex: AtomicInteger = AtomicInteger()
+    }
 
     @Transient
-    private var index: Int = 0;
+    private val dependencyIndex: AtomicInteger = AtomicInteger()
 
     @Transient
     private val resolved: AtomicBoolean = AtomicBoolean()
@@ -70,6 +76,14 @@ class ModuleConfiguration(@Transient private val project: Project) {
     }
 
     data class Dependency(@Input val name: String) {
+        constructor(group: String? = null, name: String, version: String? = null, type: String = "default", checksum: String? = null, optional: Boolean = false) : this(name) {
+            this.group = group
+            this.version = version
+            this.type = type
+            this.checksum = checksum
+            this.optional = optional
+        }
+
         @Input
         var group: String? = null
 
@@ -85,7 +99,10 @@ class ModuleConfiguration(@Transient private val project: Project) {
 
         @Input
         @Optional
-        var repo: String? = null
+        var repository: String? = null
+
+        @Input
+        var optional: Boolean = false
 
         @Input
         @Transient
@@ -104,7 +121,7 @@ class ModuleConfiguration(@Transient private val project: Project) {
         accessWideners.add(accessWidener)
         (project.extensions.findByName("loom") as LoomGradleExtension?)?.run {
             val property = project.objects.fileProperty().convention { project.file(file) }
-            addMinecraftJarProcessor(AccessWidenerJarProcessor::class.java, "stracciatella-${++index}", true, property)
+            addMinecraftJarProcessor(AccessWidenerJarProcessor::class.java, "stracciatella-${loomProcessorIndex.incrementAndGet()}", true, property)
         }
     }
 
@@ -118,16 +135,27 @@ class ModuleConfiguration(@Transient private val project: Project) {
 
             libraries.resolvedConfiguration.resolvedArtifacts.forEach {
                 val dependency = resolveDependency(it, it.moduleVersion.id)
-                this.dependencies[dependency.name] = dependency
+                this.dependencies[dependencyKey(dependency)] = dependency
             }
-            dependencies.resolvedConfiguration.firstLevelModuleDependencies.map { it.module.id }.forEach {
-                val dependency = Dependency(it.name)
-                dependency.group = it.group
-                dependency.version = it.version
-                dependency.needsRepoResolve = false
-                this.dependencies[dependency.name] = dependency
+            dependencies.run {
+                resolve()
+                this.dependencies.forEach {
+                    val generated: Boolean = it.name == "unspecified"
+                    val name = if (generated) "generated-${dependencyIndex.incrementAndGet()}" else it.name
+                    val group = if (generated) "net.stracciatella.generated" else it.group
+                    val version = if (generated) "generated" else it.version
+                    val type = "module"
+                    val dependency = Dependency(group, name, version, type, optional = generated)
+                    dependency.needsRepoResolve = false
+                    this@ModuleConfiguration.dependencies[dependencyKey(dependency)] = dependency
+                }
             }
         }
+    }
+
+    fun dependencyKey(dependency: Dependency): String {
+        if (dependency.type == "module") return dependency.name
+        return "${dependency.group}:${dependency.name}:${dependency.version}"
     }
 
     private fun resolveDependency(art: ResolvedArtifact, id: ModuleVersionIdentifier): Dependency {
@@ -176,7 +204,7 @@ class ModuleConfiguration(@Transient private val project: Project) {
             it.needsRepoResolve
         }.forEach {
             val repo = resolveRepository(it, repos) ?: throw UnknownDependencyException(it)
-            it.repo = repo.name
+            it.repository = repo.name
             val repository = Repository(repo.name)
             repository.url = repo.url.toURL().toExternalForm()
             repositories[repository.name] = repository
@@ -184,8 +212,8 @@ class ModuleConfiguration(@Transient private val project: Project) {
     }
 
     private fun resolveRepository(
-        dep: Dependency,
-        repositories: Iterable<MavenArtifactRepository>
+            dep: Dependency,
+            repositories: Iterable<MavenArtifactRepository>
     ): MavenArtifactRepository? {
         return repositories.firstOrNull {
             val repoURLString = it.url.toString()
@@ -199,8 +227,8 @@ class ModuleConfiguration(@Transient private val project: Project) {
                     instanceFollowRedirects = true
 
                     setRequestProperty(
-                        "User-Agent",
-                        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"
+                            "User-Agent",
+                            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"
                     )
 
                     connect()

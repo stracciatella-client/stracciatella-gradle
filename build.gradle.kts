@@ -5,8 +5,12 @@ plugins {
     id("com.gradle.plugin-publish") version "1.2.1"
 }
 
+description = "A gradle plugin to easily work with stracciatella modules"
+group = "net.stracciatella.gradle.plugin"
+version = "0.2.30"
+
 dependencies {
-    "implementation"(libs.gson)
+    implementation(libs.gson)
     "api"(libs.loom)
 }
 
@@ -25,10 +29,25 @@ gradlePlugin {
     vcsUrl = "https://github.com/stracciatella-client/stracciatella-gradle"
     plugins {
         register("stracciatella") {
+            tags.add("stracciatella")
             description = project.description
             id = "net.stracciatella.stracciatella"
-            displayName = "Stracciatella Gradle Plugin"
+            displayName = "Stracciatella Gradle Plugin for modules"
             implementationClass = "net.stracciatella.gradle.plugin.StracciatellaPlugin"
+        }
+        register("stracciatella-base") {
+            tags.add("stracciatella")
+            description = project.description
+            id = "net.stracciatella.stracciatella.base"
+            displayName = "Stracciatella Gradle Plugin for default configuration"
+            implementationClass = "net.stracciatella.gradle.plugin.StracciatellaBasePlugin"
+        }
+        register("stracciatella-fabric") {
+            tags.add("stracciatella")
+            description = project.description
+            id = "net.stracciatella.stracciatella.fabric"
+            displayName = "Stracciatella Gradle Plugin for use with fabric"
+            implementationClass = "net.stracciatella.gradle.plugin.StracciatellaFabricPlugin"
         }
     }
 }
