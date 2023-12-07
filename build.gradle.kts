@@ -7,7 +7,7 @@ plugins {
 
 description = "A gradle plugin to easily work with stracciatella modules"
 group = "net.stracciatella.gradle.plugin"
-version = "0.2.30"
+version = "0.2.33"
 
 dependencies {
     implementation(libs.gson)
@@ -16,6 +16,7 @@ dependencies {
 
 repositories {
     gradlePluginPortal()
+    maven("https://nexus.darkcube.eu/repository/stracciatella") { name = "Stracciatella" }
     maven("https://maven.fabricmc.net/") { name = "Fabric" }
 }
 
