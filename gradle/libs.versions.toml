@@ -1,5 +1,5 @@
 [versions]
-loom = "1.5.7"
+loom = "1.6.local"
 gson = "2.10.1"
 
 [libraries]

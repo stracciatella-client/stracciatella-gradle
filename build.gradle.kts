@@ -7,7 +7,7 @@ plugins {
 
 description = "A gradle plugin to easily work with stracciatella modules"
 group = "net.stracciatella.gradle.plugin"
-version = "0.2.34"
+version = "0.2.35"
 
 dependencies {
     implementation(libs.gson)
