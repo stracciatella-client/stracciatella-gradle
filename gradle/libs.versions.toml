@@ -1,5 +1,5 @@
 [versions]
-loom = "1.6.local"
+loom = "1.6.stracciatella-1"
 gson = "2.10.1"
 
 [libraries]
