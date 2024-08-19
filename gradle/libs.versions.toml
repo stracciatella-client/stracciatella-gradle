@@ -1,6 +1,6 @@
 [versions]
-loom = "1.6.stracciatella-1"
-gson = "2.10.1"
+loom = "1.8.0-alpha.50001"
+gson = "2.11.0"
 
 [libraries]
 loom = { group = "net.fabricmc", name = "fabric-loom", version.ref = "loom" }
