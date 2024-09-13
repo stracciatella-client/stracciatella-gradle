@@ -1,6 +1,7 @@
 package net.stracciatella.gradle.plugin
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ArchiveOperations
@@ -65,9 +66,14 @@ abstract class GenerateFabricData : DefaultTask() {
         val metaWriter = fileWidenerMeta.get().asFile.bufferedWriter()
         val zipTree = archiveOperations.zipTree(archiveIn)
         val json = JsonObject()
+        val mixins = JsonArray()
+        moduleConfiguration.mixins.forEach { mixins.add(it) }
         val modId = "stracciatella-module-" + moduleConfiguration.id
+
+        json.addProperty("schemaVersion", 1)
         json.addProperty("id", modId)
         json.addProperty("accessWidener", fileNameMergedWidener.get())
+        json.add("mixins", mixins)
         widenerWriter.write("accessWidener v2 named")
         widenerWriter.newLine()
         for (accessWidener in moduleConfiguration.accessWideners) {
