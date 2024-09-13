@@ -12,8 +12,6 @@ import org.gradle.api.internal.artifacts.repositories.resolver.MavenUniqueSnapsh
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.SourceSet
-import org.gradle.language.base.artifact.SourcesArtifact
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -35,24 +33,31 @@ open class ModuleConfiguration(@Transient private val project: Project) {
     private val resolved: AtomicBoolean = AtomicBoolean()
 
     @Input
+    @Optional
     var main: String? = null
 
     @Input
+    @Optional
     var group: String? = null
 
     @Input
-    var version: String? = null
+    @Optional
+    var version: String? = project.version.toString()
 
     @Input
+    @Optional
     var name: String? = null
 
     @Input
+    @Optional
     var website: String? = null
 
     @Input
+    @Optional
     var description: String? = null
 
     @Input
+    @Optional
     var id: String? = null
 
     @Input
@@ -62,6 +67,7 @@ open class ModuleConfiguration(@Transient private val project: Project) {
     val accessWideners: MutableSet<String> = HashSet()
 
     @Input
+    @Optional
     val authors: MutableList<String> = ArrayList()
 
     @Nested
@@ -76,7 +82,14 @@ open class ModuleConfiguration(@Transient private val project: Project) {
     }
 
     data class Dependency(@Input val name: String) {
-        constructor(group: String? = null, name: String, version: String? = null, type: String = "default", checksum: String? = null, optional: Boolean = false) : this(name) {
+        constructor(
+            group: String? = null,
+            name: String,
+            version: String? = null,
+            type: String = "default",
+            checksum: String? = null,
+            optional: Boolean = false
+        ) : this(name) {
             this.group = group
             this.version = version
             this.type = type
@@ -121,7 +134,12 @@ open class ModuleConfiguration(@Transient private val project: Project) {
         accessWideners.add(accessWidener)
         (project.extensions.findByName("loom") as LoomGradleExtension?)?.run {
             val property = project.objects.fileProperty().convention { project.file(file) }
-            addMinecraftJarProcessor(AccessWidenerJarProcessor::class.java, "stracciatella-${loomProcessorIndex.incrementAndGet()}", true, property)
+            addMinecraftJarProcessor(
+                AccessWidenerJarProcessor::class.java,
+                "stracciatella-${loomProcessorIndex.incrementAndGet()}",
+                true,
+                property
+            )
         }
     }
 
@@ -193,9 +211,10 @@ open class ModuleConfiguration(@Transient private val project: Project) {
     }
 
     internal fun validate() {
-        if (main.isNullOrEmpty()) throw InvalidModuleJson("no module main class")
-        if (name.isNullOrEmpty()) throw InvalidModuleJson("no module name")
-        if (id.isNullOrEmpty()) throw InvalidModuleJson("no module id")
+        if (main.isNullOrBlank()) throw InvalidModuleJson("no module main class")
+        if (name.isNullOrBlank()) throw InvalidModuleJson("no module name")
+        if (group.isNullOrBlank()) throw InvalidModuleJson("no module group")
+        if (id.isNullOrBlank()) throw InvalidModuleJson("no module id")
     }
 
     internal fun resolveRepositories(repositoryHandler: RepositoryHandler) {
@@ -212,12 +231,19 @@ open class ModuleConfiguration(@Transient private val project: Project) {
     }
 
     private fun resolveRepository(
-            dep: Dependency,
-            repositories: Iterable<MavenArtifactRepository>
+        dep: Dependency,
+        repositories: Iterable<MavenArtifactRepository>
     ): MavenArtifactRepository? {
         return repositories.firstOrNull {
             val repoURLString = it.url.toString()
-            val url = URI.create("$repoURLString${if (repoURLString.endsWith('/')) "" else "/"}${dep.group!!.replace('.', '/')}/${dep.name}/${dep.version}/${dep.name}-${dep.version}.jar").toURL()
+            val url = URI.create(
+                "$repoURLString${if (repoURLString.endsWith('/')) "" else "/"}${
+                    dep.group!!.replace(
+                        '.',
+                        '/'
+                    )
+                }/${dep.name}/${dep.version}/${dep.name}-${dep.version}.jar"
+            ).toURL()
             val connection = url.openConnection()
             if (connection is HttpURLConnection) {
                 return@firstOrNull with(connection) {
@@ -227,8 +253,8 @@ open class ModuleConfiguration(@Transient private val project: Project) {
                     instanceFollowRedirects = true
 
                     setRequestProperty(
-                            "User-Agent",
-                            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"
+                        "User-Agent",
+                        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11"
                     )
 
                     connect()
@@ -237,5 +263,9 @@ open class ModuleConfiguration(@Transient private val project: Project) {
             }
             false
         }
+    }
+
+    override fun toString(): String {
+        return "ModuleConfiguration(main=$main, group=$group, version=$version, name=$name, website=$website, description=$description, id=$id, mixins=$mixins, accessWideners=$accessWideners, authors=$authors, dependencies=$dependencies, repositories=$repositories)"
     }
 }

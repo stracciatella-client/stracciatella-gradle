@@ -19,10 +19,9 @@ class StracciatellaPlugin : Plugin<Project> {
             plugins.run {
                 apply<StracciatellaFabricPlugin>()
             }
-            val extension = ModuleConfiguration(this)
-            extensions.add("stracciatella", extension)
-            val sourceSets = extensions.getByType<SourceSetContainer>()
-            registerGenerator(project, sourceSets.named(MAIN_SOURCE_SET_NAME), extension)
+            StracciatellaConfiguration(this).run()
+//            val sourceSets = extensions.getByType<SourceSetContainer>()
+//            registerGenerator(project, sourceSets.named(MAIN_SOURCE_SET_NAME), extension)
         }
     }
 }
