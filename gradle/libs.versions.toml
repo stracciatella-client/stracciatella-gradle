@@ -1,5 +1,5 @@
 [versions]
-loom = "1.9.0-SNAPSHOT"
+loom = "1.9.0-alpha.50002"
 gson = "2.11.0"
 
 [libraries]
