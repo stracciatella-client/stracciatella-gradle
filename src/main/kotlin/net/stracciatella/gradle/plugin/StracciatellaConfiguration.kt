@@ -3,9 +3,12 @@ package net.stracciatella.gradle.plugin
 import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.kotlin.dsl.getByName
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
@@ -68,6 +71,13 @@ class StracciatellaConfiguration(private val project: Project) : Runnable {
         }
         project.tasks.named("assemble") {
             dependsOn(completeJarTask)
+        }
+        project.configurations.register("stracciatellaNamed") {
+            isCanBeConsumed = true
+            extendsFrom(project.configurations.getByName(JavaPlugin.API_CONFIGURATION_NAME))
+        }
+        project.artifacts {
+            add("stracciatellaNamed", devJarTask)
         }
         val sourceSets = project.extensions.getByType<SourceSetContainer>()
         sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).run {
