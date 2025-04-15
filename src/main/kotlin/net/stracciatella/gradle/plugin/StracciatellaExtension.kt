@@ -3,7 +3,6 @@ package net.stracciatella.gradle.plugin
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.register
@@ -69,9 +68,6 @@ class StracciatellaExtension {
             val stracciatella = if (name.isEmpty()) "stracciatella" else "Stracciatella"
             val libraries = project.configurations.create("${name}${stracciatella}Library")
             val dependencies = project.configurations.create("${name}${stracciatella}Dependency")
-            project.configurations.named(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME).configure {
-                extendsFrom(libraries, dependencies)
-            }
             return Triple(registerGenerator(project, "generateStracciatella${name}ModuleJson", moduleConfigurator.map {
                 it.setDefaults(project, libraries, dependencies)
                 it
