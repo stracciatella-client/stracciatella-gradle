@@ -24,7 +24,7 @@ java {
     withJavadocJar()
 }
 
-kotlin.jvmToolchain(8)
+kotlin.jvmToolchain(21)
 
 gradlePlugin {
     website = "https://github.com/stracciatella-client/stracciatella-gradle"
