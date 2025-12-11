@@ -15,7 +15,7 @@ dependencies {
 
 repositories {
     gradlePluginPortal()
-    maven("https://nexus.darkcube.eu/repository/stracciatella") { name = "Stracciatella" }
+    maven("https://reposilite.dasbabypixel.de/stracciatella") { name = "Stracciatella" }
     maven("https://maven.fabricmc.net/") { name = "Fabric" }
 }
 
@@ -56,9 +56,9 @@ gradlePlugin {
 
 publishing {
     repositories {
-        maven("https://nexus.darkcube.eu/repository/dasbabypixel/") {
+        maven("https://reposilite.dasbabypixel.de/stracciatella") {
             credentials(PasswordCredentials::class)
-            name = "DasBabyPixel"
+            name = "Stracciatella"
         }
     }
 }

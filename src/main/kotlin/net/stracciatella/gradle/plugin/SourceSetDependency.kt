@@ -4,11 +4,8 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.FileCollectionDependency
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.artifacts.dependencies.AbstractDependency
 import org.gradle.api.internal.artifacts.dependencies.SelfResolvingDependencyInternal
 import org.gradle.api.tasks.SourceSet
-import org.gradle.api.tasks.TaskDependency
-import java.io.File
 
 class SourceSetDependency private constructor(
     private val group: String,
@@ -16,7 +13,9 @@ class SourceSetDependency private constructor(
     private val version: String,
     private val files: FileCollection,
     private val targetComponentId: ComponentIdentifier? = null
-) : AbstractDependency(), FileCollectionDependency, SelfResolvingDependencyInternal {
+) : FileCollectionDependency, SelfResolvingDependencyInternal {
+
+    private var reason: String? = null
 
     constructor(
         sourceSet: SourceSet,
@@ -37,25 +36,33 @@ class SourceSetDependency private constructor(
         return version
     }
 
-    override fun contentEquals(dependency: Dependency): Boolean {
-        return equals(dependency)
-    }
+//    override fun contentEquals(dependency: Dependency): Boolean {
+//        return equals(dependency)
+//    }
 
     override fun copy(): Dependency {
         return SourceSetDependency(group, name, version, files)
     }
 
-    override fun getBuildDependencies(): TaskDependency {
-        return files.buildDependencies
+    override fun getReason(): String? {
+        return reason
     }
 
-    override fun resolve(): MutableSet<File> {
-        return files.files
+    override fun because(reason: String?) {
+        this.reason = reason
     }
 
-    override fun resolve(transitive: Boolean): MutableSet<File> {
-        return files.files
-    }
+//    override fun getBuildDependencies(): TaskDependency {
+//        return files.buildDependencies
+//    }
+//
+//    override fun resolve(): MutableSet<File> {
+//        return files.files
+//    }
+//
+//    override fun resolve(transitive: Boolean): MutableSet<File> {
+//        return files.files
+//    }
 
     override fun getTargetComponentId(): ComponentIdentifier? {
         return targetComponentId
