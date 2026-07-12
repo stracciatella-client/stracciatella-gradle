@@ -1,6 +1,6 @@
 package net.stracciatella.gradle.plugin
 
-import net.fabricmc.loom.LoomGradlePlugin
+import net.fabricmc.loom.LoomNoRemapGradlePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -10,7 +10,7 @@ class StracciatellaFabricPlugin: Plugin<Project> {
         project.run {
             plugins.run {
                 apply<StracciatellaBasePlugin>()
-                apply<LoomGradlePlugin>()
+                apply<LoomNoRemapGradlePlugin>()
             }
         }
     }
